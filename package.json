@@ -1,0 +1,35 @@
+{
+  "name": "fantasy-path",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "sagui build",
+    "dist": "sagui dist",
+    "format": "sagui format",
+    "start": "sagui develop --port 4000",
+    "test": "sagui test",
+    "test:lint": "sagui test:lint",
+    "test:typecheck": "sagui test:typecheck",
+    "test:unit": "sagui test:unit --coverage",
+    "test:unit:watch": "sagui test:unit --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xaviervia/fantasy-path.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xaviervia/fantasy-path/issues"
+  },
+  "homepage": "https://github.com/xaviervia/fantasy-path#readme",
+  "devDependencies": {
+    "fantasy-color": "^0.2.3",
+    "ramda": "^0.25.0",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "sagui": "^11.5.0"
+  }
+}
