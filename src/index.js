@@ -1,8 +1,9 @@
 import React from 'react'
 import { render } from 'react-dom'
 import Color from 'fantasy-color'
-import { add } from 'ramda'
-import Path, { CubicBezierCurve, LineTo, MoveTo } from './Path'
+import { add, multiply } from 'ramda'
+import Path from './Path'
+import { ClosePath, CubicBezierCurve, LineTo, MoveTo } from './PathCommand'
 import Point from './Point'
 import Context2dTask from './Context2dTask'
 
@@ -10,7 +11,8 @@ const myPath = Path(
   MoveTo(0, 80),
   LineTo(20, 60),
   CubicBezierCurve(Point(20, 60), Point(60, 20), Point(100, 60)),
-  LineTo(120, 80)
+  LineTo(120, 80),
+  ClosePath()
 )
 
 const topLeftPoint = Point(0, 0)
@@ -87,7 +89,17 @@ render(
       .beginPath()
       .chain(
         leftTopThroughCenter
-          // .map(command => command.map(multiply(2)))
+          .map(multiply(2))
+          .getContext2dTaskFor
+      )
+      .chain(
+        rightTopThroughCenter
+          .map(multiply(2))
+          .getContext2dTaskFor
+      )
+      .chain(
+        myPath
+          .map(multiply(2))
           .getContext2dTaskFor
       )
       .map(context2d => {

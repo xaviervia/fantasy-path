@@ -5,7 +5,8 @@ const MoveTo = (x, y) => ({
   y,
   commandType: 'MoveTo',
   toD: () => `M${x},${y}`,
-  getContext2dTaskFor: _getContext2dTaskFor(x, y)
+  getContext2dTaskFor: _getContext2dTaskFor(x, y),
+  map: f => MoveTo(f(x), f(y))
 })
 
 MoveTo.fromPoint = ({ x, y }) => MoveTo(x, y)
