@@ -6,7 +6,7 @@ const ClosePath = () => ({
   getContext2dTaskFor: _getContext2dTaskFor(),
   map: ClosePath,
   mapX: ClosePath,
-  mapY: ClosePath
+  mapY: ClosePath,
 })
 
 export default ClosePath

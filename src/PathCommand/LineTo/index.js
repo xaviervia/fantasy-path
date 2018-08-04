@@ -8,7 +8,7 @@ const LineTo = (x, y) => ({
   getContext2dTaskFor: _getContext2dTaskFor(x, y),
   mapX: f => LineTo(f(x), y),
   mapY: f => LineTo(x, f(y)),
-  map: f => LineTo(f(x), f(y))
+  map: f => LineTo(f(x), f(y)),
 })
 
 LineTo.fromPoint = ({ x, y }) => LineTo(x, y)

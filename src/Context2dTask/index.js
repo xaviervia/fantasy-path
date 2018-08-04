@@ -15,9 +15,7 @@ const Context2dTask = context2dTask => ({
 
   map: f => Context2dTask(context2dTask.map(f)),
 
-  chain: f => Context2dTask(
-    context2dTask.chain(context2d => f(context2d).context2dTask)
-  ),
+  chain: f => Context2dTask(context2dTask.chain(context2d => f(context2d).context2dTask)),
 
   run: () => context2dTask.run(),
 })

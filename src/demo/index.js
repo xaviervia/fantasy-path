@@ -1,16 +1,18 @@
 import React from 'react'
 import { render } from 'react-dom'
 import Color from 'fantasy-color'
-import { add } from 'ramda'
-import Path, { CubicBezierCurve, LineTo, MoveTo } from './Path'
-import Point from './Point'
+import { add, multiply } from 'ramda'
+import Path from '../Path'
+import { ClosePath, CubicBezierCurve, LineTo, MoveTo } from '../PathCommand'
+import Point from '../Point'
+import Context2dTask from '../Context2dTask'
 
 const myPath = Path(
-  //
   MoveTo(0, 80),
   LineTo(20, 60),
-  CubicBezierCurve([20, 60], [60, 20], [100, 60]),
-  LineTo(120, 80)
+  CubicBezierCurve(Point(20, 60), Point(60, 20), Point(100, 60)),
+  LineTo(120, 80),
+  ClosePath()
 )
 
 const topLeftPoint = Point(0, 0)
@@ -73,34 +75,28 @@ render(
       justifyContent: 'center',
     }}
   >
-    <svg
-      style={{
-        width: 140,
-        height: 140,
-      }}
-    >
-      <g
-        style={{
-          transform: 'translate(10px, 10px)',
-        }}
-      >
-        <path
-          d={topLeftCorner.toD()}
-          stroke={palette.black.toString()}
-          fill={palette.transparent.toString()}
-        />
-        <path
-          d={leftTopThroughCenter.toD()}
-          stroke={palette.black.toString()}
-          fill={palette.transparent.toString()}
-        />
-        <path
-          d={rightTopThroughCenter.toD()}
-          stroke={palette.black.toString()}
-          fill={palette.transparent.toString()}
-        />
-      </g>
-    </svg>
+    <canvas id="theCanvas" style={{ width: 140, height: 140 }} />
   </main>,
-  document.getElementById('root')
+  document.getElementById('root'),
+  () => {
+    const canvasElement = global.theCanvas
+
+    canvasElement.setAttribute('width', 280)
+    canvasElement.setAttribute('height', 280)
+    const context2d = canvasElement.getContext('2d')
+
+    Context2dTask.fromContext2d(context2d)
+      .beginPath()
+      .chain(
+        leftTopThroughCenter
+          .concat(rightTopThroughCenter)
+          .concat(myPath)
+          .map(multiply(2)).getContext2dTaskFor
+      )
+      .map(context2d => {
+        context2d.stroke()
+        return context2d
+      })
+      .run()
+  }
 )

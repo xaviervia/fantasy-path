@@ -5,9 +5,7 @@ const Path = (...commands) => ({
   commands,
   toD: () => _toD(commands),
   getContext2dTaskFor: _getContext2dTaskFor(commands),
-  concat: ({commands: otherCommands}) => Path(
-    ...commands.concat(otherCommands)
-  ),
+  concat: ({ commands: otherCommands }) => Path(...commands.concat(otherCommands)),
   map: f => Path(...commands.map(command => command.map(f))),
   mapX: f => Path(...commands.map(command => command.mapX(f))),
   mapY: f => Path(...commands.map(command => command.mapY(f))),
