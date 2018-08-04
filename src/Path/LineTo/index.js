@@ -5,6 +5,6 @@ const LineTo = (x, y) => ({
   toD: () => `L${x},${y}`,
 })
 
-LineTo.fromPoint = ({x, y}) => LineTo(x, y)
+LineTo.fromPoint = ({ x, y }) => LineTo(x, y)
 
 export default LineTo

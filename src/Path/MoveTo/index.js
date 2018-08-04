@@ -5,6 +5,6 @@ const MoveTo = (x, y) => ({
   toD: () => `M${x},${y}`,
 })
 
-MoveTo.fromPoint = ({x, y}) => MoveTo(x, y)
+MoveTo.fromPoint = ({ x, y }) => MoveTo(x, y)
 
 export default MoveTo

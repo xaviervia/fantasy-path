@@ -2,7 +2,7 @@ import React from 'react'
 import { render } from 'react-dom'
 import Color from 'fantasy-color'
 import { add } from 'ramda'
-import Path, { ClosePath, CubicBezierCurve, LineTo, MoveTo } from './Path'
+import Path, { CubicBezierCurve, LineTo, MoveTo } from './Path'
 import Point from './Point'
 
 const myPath = Path(
@@ -26,40 +26,22 @@ const center = Point(60, 60)
 
 const topLeftCorner = Path(
   MoveTo.fromPoint(middleLeft),
-  LineTo.fromPoint(
-    topLeftPoint.mapY(add(10))
-  ),
-  CubicBezierCurve(
-    topLeftPoint.mapY(add(10)),
-    topLeftPoint,
-    topLeftPoint.mapX(add(10))
-  ),
+  LineTo.fromPoint(topLeftPoint.mapY(add(10))),
+  CubicBezierCurve(topLeftPoint.mapY(add(10)), topLeftPoint, topLeftPoint.mapX(add(10))),
   LineTo.fromPoint(middleTop)
 )
 
 const leftTopThroughCenter = Path(
   MoveTo.fromPoint(middleLeft),
-  LineTo.fromPoint(
-    center.mapX(add(-10))
-  ),
-  CubicBezierCurve(
-    center.mapX(add(-10)),
-    center,
-    center.mapY(add(-10))
-  ),
+  LineTo.fromPoint(center.mapX(add(-10))),
+  CubicBezierCurve(center.mapX(add(-10)), center, center.mapY(add(-10))),
   LineTo.fromPoint(middleTop)
 )
 
 const rightTopThroughCenter = Path(
   MoveTo.fromPoint(middleRight),
-  LineTo.fromPoint(
-    center.mapX(add(10))
-  ),
-  CubicBezierCurve(
-    center.mapX(add(10)),
-    center,
-    center.mapY(add(-10))
-  ),
+  LineTo.fromPoint(center.mapX(add(10))),
+  CubicBezierCurve(center.mapX(add(10)), center, center.mapY(add(-10))),
   LineTo.fromPoint(middleTop)
 )
 
