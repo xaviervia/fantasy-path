@@ -89,16 +89,8 @@ render(
       .beginPath()
       .chain(
         leftTopThroughCenter
-          .map(multiply(2))
-          .getContext2dTaskFor
-      )
-      .chain(
-        rightTopThroughCenter
-          .map(multiply(2))
-          .getContext2dTaskFor
-      )
-      .chain(
-        myPath
+          .concat(rightTopThroughCenter)
+          .concat(myPath)
           .map(multiply(2))
           .getContext2dTaskFor
       )

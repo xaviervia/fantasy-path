@@ -3,6 +3,7 @@ const Point = (x, y) => ({
   y,
   mapX: f => Point(f(x), y),
   mapY: f => Point(x, f(y)),
+  map: f => Point(f(x), f(y)),
   toD: () => `${x},${y}`,
 })
 

@@ -6,20 +6,9 @@ const CubicBezierCurve = (start, middle, end) => ({
   end,
   toD: () => `C${start.x},${start.y} ${middle.x},${middle.y} ${end.x},${end.y}`,
   getContext2dTaskFor: _getContext2dTaskFor(start, middle, end),
-  map: f => CubicBezierCurve(
-    {
-      x: f(start.x),
-      y: f(start.y)
-    },
-    {
-      x: f(middle.x),
-      y: f(middle.y)
-    },
-    {
-      x: f(end.x),
-      y: f(end.y)
-    }
-  )
+  mapX: f => CubicBezierCurve(start.mapX(f), middle.mapX(f), end.mapX(f)),
+  mapY: f => CubicBezierCurve(start.mapY(f), middle.mapY(f), end.mapY(f)),
+  map: f => CubicBezierCurve(start.map(f), middle.map(f), end.map(f))
 })
 
 export default CubicBezierCurve

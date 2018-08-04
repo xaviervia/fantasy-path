@@ -6,10 +6,9 @@ const LineTo = (x, y) => ({
   commandType: 'LineTo',
   toD: () => `L${x},${y}`,
   getContext2dTaskFor: _getContext2dTaskFor(x, y),
-  map: f => LineTo(
-    f(x),
-    f(y)
-  )
+  mapX: f => LineTo(f(x), y),
+  mapY: f => LineTo(x, f(y)),
+  map: f => LineTo(f(x), f(y))
 })
 
 LineTo.fromPoint = ({ x, y }) => LineTo(x, y)
