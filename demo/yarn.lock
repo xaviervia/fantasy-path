@@ -219,13 +219,6 @@
     "@babel/helper-remap-async-to-generator" "7.0.0-beta.56"
     "@babel/plugin-syntax-async-generators" "7.0.0-beta.56"
 
-"@babel/plugin-proposal-export-namespace-from@^7.0.0-beta.56":
-  version "7.0.0-beta.56"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-export-namespace-from/-/plugin-proposal-export-namespace-from-7.0.0-beta.56.tgz#e070d923818b122e8a18df5d97b2facc3342277a"
-  dependencies:
-    "@babel/helper-plugin-utils" "7.0.0-beta.56"
-    "@babel/plugin-syntax-export-namespace-from" "7.0.0-beta.56"
-
 "@babel/plugin-proposal-object-rest-spread@7.0.0-beta.56":
   version "7.0.0-beta.56"
   resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-object-rest-spread/-/plugin-proposal-object-rest-spread-7.0.0-beta.56.tgz#5a8b8c89e94155d766baacdf8e50ea7dead96741"
@@ -251,12 +244,6 @@
 "@babel/plugin-syntax-async-generators@7.0.0-beta.56":
   version "7.0.0-beta.56"
   resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-async-generators/-/plugin-syntax-async-generators-7.0.0-beta.56.tgz#e784a9f104fa9df3a6273079a8be7ef5085259ea"
-  dependencies:
-    "@babel/helper-plugin-utils" "7.0.0-beta.56"
-
-"@babel/plugin-syntax-export-namespace-from@7.0.0-beta.56":
-  version "7.0.0-beta.56"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-export-namespace-from/-/plugin-syntax-export-namespace-from-7.0.0-beta.56.tgz#a5773a4c058934537045103a913d996938934f66"
   dependencies:
     "@babel/helper-plugin-utils" "7.0.0-beta.56"
 

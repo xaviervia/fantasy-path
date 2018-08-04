@@ -1,3 +1,9 @@
+# fantasy-path
+
+Fantasy Land types for operating with vector paths, compatible with SVG and Canvas.
+
+*Work in progress*
+
 ## Types
 
 - `Context2dTask`: Task for drawing to a context2d

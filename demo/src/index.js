@@ -2,10 +2,9 @@ import React from 'react'
 import { render } from 'react-dom'
 import Color from 'fantasy-color'
 import { add, multiply } from 'ramda'
-import Path from '../Path'
-import { ClosePath, CubicBezierCurve, LineTo, MoveTo } from '../PathCommand'
-import Point from '../Point'
-import Context2dTask from '../Context2dTask'
+import { Context2dTask, Path, PathCommand, Point } from '../../dist'
+
+const { ClosePath, CubicBezierCurve, LineTo, MoveTo } = PathCommand
 
 const myPath = Path(
   MoveTo(0, 80),

@@ -1,16 +1,15 @@
 {
-  "name": "fantasy-path",
-  "version": "0.0.1",
-  "description": "Fantasy Land types for operating with vector paths, compatible with SVG and Canvas",
-  "main": "dist/index.js",
+  "name": "fantasy-path-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "sagui build",
-    "dist": "babel src/ -d dist/ --ignore spec.js,demo/",
+    "dist": "sagui dist",
     "format": "sagui format",
-    "prepublishOnly": "yarn dist",
     "start": "sagui develop --port 4000",
     "test": "sagui test",
     "test:lint": "sagui test:lint",
@@ -18,28 +17,11 @@
     "test:unit": "sagui test:unit --coverage",
     "test:unit:watch": "sagui test:unit --watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/xaviervia/fantasy-path.git"
-  },
-  "keywords": [
-    "fantasy-land",
-    "functional",
-    "svg",
-    "folktale",
-    "canvas",
-    "drawing"
-  ],
   "author": "Fernando Via Canel <fernando.via@gmail.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/xaviervia/fantasy-path/issues"
-  },
-  "homepage": "https://github.com/xaviervia/fantasy-path#readme",
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.56",
     "@babel/core": "^7.0.0-beta.56",
-    "@babel/plugin-proposal-export-namespace-from": "^7.0.0-beta.56",
     "@babel/preset-env": "^7.0.0-beta.56",
     "fantasy-color": "^0.2.3",
     "ramda": "^0.25.0",
