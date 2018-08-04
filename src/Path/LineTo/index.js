@@ -1,8 +1,11 @@
+import _getContext2dTaskFor from './getContext2dTaskFor'
+
 const LineTo = (x, y) => ({
   x,
   y,
   commandType: 'LineTo',
   toD: () => `L${x},${y}`,
+  getContext2dTaskFor: _getContext2dTaskFor(x, y)
 })
 
 LineTo.fromPoint = ({ x, y }) => LineTo(x, y)

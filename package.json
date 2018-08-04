@@ -31,5 +31,8 @@
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "sagui": "^11.5.0"
+  },
+  "dependencies": {
+    "folktale": "^2.1.0"
   }
 }

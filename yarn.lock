@@ -2871,6 +2871,10 @@ flow-bin@0.50.0:
   version "0.50.0"
   resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.50.0.tgz#d4cdb2430dee1a3599f0eb6fe551146e3027256a"
 
+folktale@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/folktale/-/folktale-2.1.0.tgz#3332b9e37b4b92150788b72bd0e2ddd8d70e4096"
+
 follow-redirects@^1.0.0:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.5.2.tgz#5a9d80e0165957e5ef0c1210678fc5c4acb9fb03"
