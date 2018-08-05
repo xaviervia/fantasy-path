@@ -1,6 +1,7 @@
 import _getContext2dTaskFor from './getContext2dTaskFor'
 
 const CubicBezierCurve = (start, middle, end) => ({
+  commandType: 'CubicBezierCurve',
   start,
   middle,
   end,
@@ -9,6 +10,12 @@ const CubicBezierCurve = (start, middle, end) => ({
   mapX: f => CubicBezierCurve(start.mapX(f), middle.mapX(f), end.mapX(f)),
   mapY: f => CubicBezierCurve(start.mapY(f), middle.mapY(f), end.mapY(f)),
   map: f => CubicBezierCurve(start.map(f), middle.map(f), end.map(f)),
+  toJSON: () => ({
+    commandType: 'CubicBezierCurve',
+    start,
+    middle,
+    end,
+  })
 })
 
 export default CubicBezierCurve

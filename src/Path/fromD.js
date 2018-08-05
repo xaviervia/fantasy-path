@@ -1,85 +1,30 @@
 import Maybe from 'folktale/maybe'
 import Result from 'folktale/result'
-import * as PathCommand from '../PathCommand'
+import { LineTo, MoveTo } from '../PathCommand'
+import * as ParsingAction from './ParsingAction'
+import ParsingContext from './ParsingContext'
+import { magenta } from 'chalk'
 
-const Action = {
-  Initial: () => ({
-    match: ({ Initial, _ }) =>
-      Initial != null
-        ? Initial()
-        : _()
-  }),
-  MoveTo: () => ({
-    match: ({ MoveTo, _ }) =>
-      MoveTo != null
-        ? MoveTo()
-        : _()
-  }),
-  MoveToX: () => ({
-    match: ({ MoveToX, _ }) =>
-      MoveToX != null
-        ? MoveToX()
-        : _()
-  }),
-  MoveToMiddle: () => ({
-    match: ({ MoveToMiddle, _ }) =>
-      MoveToMiddle != null
-        ? MoveToMiddle()
-        : _()
-  }),
-  Problem: (reason) => ({
-    reason,
-    match: ({ Problem, _ }) =>
-      Problem  != null
-        ? Problem(reason)
-        : _(reason)
-  })
+const parseNext = parsingContext => {
+  console.log(`${magenta('<>')} ${parsingContext.getAction().inspect()}`, parsingContext.getBuffer())
+
+  return parsingContext
+    .getAction()
+    .match({
+      Initial: () => initialState(parsingContext),
+      LineTo: () => lineToState(parsingContext),
+      LineToX: () => lineToXState(parsingContext),
+      LineToMiddle: () => lineToMiddleState(parsingContext),
+      LineToY: () => lineToYState(parsingContext),
+      MoveTo: () => moveToState(parsingContext),
+      MoveToX: () => moveToXState(parsingContext),
+      MoveToMiddle: () => moveToMiddleState(parsingContext),
+      MoveToY: () => moveToYState(parsingContext),
+      Problem: () => parsingContext,
+    })
 }
 
-const ParsingContext = (
-  text,
-  position = 0,
-  buffer = [],
-  action = Action.Initial(),
-  parentContext,
-) => ({
-  text,
-  position,
-  buffer,
-  action,
-  getAction: () => action,
-  getCharacter: () => text[position],
-  getBuffer: () => buffer,
-  getPosition: () => position,
-  getText: () => text,
-  consumeCharacter: () => ParsingContext(
-    text,
-    position + 1,
-    buffer,
-    action
-  ),
-  addToBuffer: character => ParsingContext(
-    text,
-    position,
-    [...buffer, character],
-    action,
-  ),
-  addAction: newAction => ParsingContext(
-    text,
-    position,
-    '',
-    newAction,
-    ParsingContext(
-      text,
-      position,
-      buffer,
-      action,
-      parentContext
-    )
-  )
-})
-
-const isValidMoveToCharacter = character => {
+const isValidNumberCharacter = character => {
   switch (character) {
     case '0':
     case '1':
@@ -100,13 +45,65 @@ const isValidMoveToCharacter = character => {
   return false
 }
 
-const moveToProcess = parsingContext => pathProcessCharacter(
-  isValidMoveToCharacter(parsingContext.getCharacter())
-    ? parsingContext.addAction(Action.MoveToX)
-    : parsingContext.popAction()
-)
+const initialState = parsingContext => {
+  switch (parsingContext.getCharacter()) {
+    case 'M':
+      return parseNext(
+        parsingContext
+          .consumeCharacter()
+          .addAction(ParsingAction.MoveTo())
+      )
 
-const moveToXProcess = parsingContext => {
+    case 'L':
+      return parseNext(
+          parsingContext
+            .consumeCharacter()
+            .addAction(ParsingAction.LineTo())
+      )
+
+    case ' ':
+      return parseNext(
+        parsingContext
+          .consumeCharacter()
+      )
+
+    case undefined:
+      return parsingContext
+
+    default:
+      return parseNext(
+        parsingContext
+          .addAction(ParsingAction.Problem())
+          .addToBuffer(`Unexpected character '${parsingContext.getCharacter()}' at position ${parsingContext.getPosition()}, expecting indicators of the start of a command, such as M, C, L or Z`)
+        )
+  }
+}
+
+const lineToState = parsingContext => {
+  const buffer = parsingContext.getBuffer()
+  if (buffer.length === 2) {
+    return parseNext(
+      parsingContext
+      .getParentContext()
+      .addToBuffer(LineTo(buffer[0], buffer[1]))
+    )
+  } else {
+    if (isValidNumberCharacter(parsingContext.getCharacter())) {
+      return parseNext(
+        parsingContext.addAction(ParsingAction.LineToX())
+      )
+    }
+
+    return parseNext(
+      parsingContext
+        .getParentContext()
+        .addAction(ParsingAction.Problem())
+        .addToBuffer(`Unterminated LineTo (L) command at character ${parsingContext.position}, please ensure the L is followed by two float or integer numbers representing X and Y coordinates, separated by a comma.`)
+    )
+  }
+}
+
+const lineToXState = parsingContext => {
   switch (parsingContext.getCharacter()) {
     case '0':
     case '1':
@@ -119,170 +116,247 @@ const moveToXProcess = parsingContext => {
     case '8':
     case '9':
     case '.':
-      return pathProcessCharacter(
+      return parseNext(
         parsingContext
           .addToBuffer(parsingContext.getCharacter())
           .consumeCharacter()
       )
+
     default:
       const buffer = parsingContext.getBuffer()
 
-      return pathProcessCharacter(
-        buffer.length === 0
-          ? parsingContext
-              .getParentContext()
-              .addAction(
-                Action.Problem(
-                  `Found ${parsingContext.getCharacter()} when expecting number for the X value of MoveTo. #${parsingContext.getPosition()}`
-                )
-              )
-          : parsingContext
-              .getParentContext()
-              .addToBuffer(parseInt(buffer.join('')))
-              .addAction(Action.MoveToMiddle())
+      if (buffer.length === 0) {
+        return parseNext(
+          parsingContext
+            .addAction(ParsingAction.Problem())
+            .addToBuffer(`Comma found when expecting a number in a LineTo (L) command at character ${parsingContext.position}, please ensure the L is followed by a float indicating the value for the X coordinate.`)
         )
-  }
-}
+      }
 
-const initialProcess = parsingContext => {
-  switch (parsingContext.getCharacter()) {
-    case 'M':
-      return pathProcessCharacter(
+      const x = parseFloat(buffer.join(''))
+      return parseNext(
         parsingContext
-          .consumeCharacter()
-          .addAction(Action.MoveTo)
+          .getParentContext()
+          .addToBuffer(x)
+          .addAction(ParsingAction.LineToMiddle())
       )
   }
 }
 
-const moveToMiddle = parsingContext => {
-  // finish, lying, for testing purposes
-  return parsingContext
+const lineToMiddleState = parsingContext => {
+  switch (parsingContext.getCharacter()) {
+    case ' ':
+      return parseNext(
+        parsingContext.consumeCharacter()
+      )
+    case ',':
+      return parseNext(
+        parsingContext
+          .consumeCharacter()
+          .getParentContext()
+          .addAction(ParsingAction.LineToY())
+      )
+    default:
+      return parseNext(
+        parsingContext
+          .addAction(ParsingAction.Problem())
+          .addToBuffer(`Unexpected character '${parsingContext.getCharacter()}' in position ${parsingContext.getPosition()}, after the X coordinate value of a LineTo there should be a comma, and optionally spaces.`)
+      )
+  }
 }
 
-const pathProcessCharacter = parsingContext =>
-  parsingContext
+const lineToYState = parsingContext => {
+  switch (parsingContext.getCharacter()) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '.':
+      return parseNext(
+        parsingContext
+          .addToBuffer(parsingContext.getCharacter())
+          .consumeCharacter()
+      )
+
+    case ' ':
+      if (parsingContext.getBuffer().length === 0) {
+        return parseNext(
+          parsingContext.consumeCharacter()
+        )
+      }
+
+    default:
+      const buffer = parsingContext.getBuffer()
+
+      if (buffer.length === 0) {
+        const error = parsingContext.getCharacter() === undefined
+          ? `Unexpected end of text when expecting a number in a LineTo (L) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
+          : `Character ${parsingContext.getCharacter()} found when expecting a number in a LineTo (L) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
+        return parseNext(
+          parsingContext
+            .addAction(ParsingAction.Problem())
+            .addToBuffer(error)
+        )
+      }
+
+      const x = parseFloat(buffer.join(''))
+      return parseNext(
+        parsingContext
+          .getParentContext()
+          .addToBuffer(x)
+      )
+  }
+}
+
+const moveToState = parsingContext => {
+  const buffer = parsingContext.getBuffer()
+  if (buffer.length === 2) {
+    return parseNext(
+      parsingContext
+        .getParentContext()
+        .addToBuffer(MoveTo(buffer[0], buffer[1]))
+    )
+  } else {
+    if (isValidNumberCharacter(parsingContext.getCharacter())) {
+      return parseNext(
+        parsingContext.addAction(ParsingAction.MoveToX())
+      )
+    }
+    return parseNext(
+      parsingContext
+        .getParentContext()
+        .addAction(ParsingAction.Problem())
+        .addToBuffer(`Unterminated MoveTo (M) command at character ${parsingContext.position}, please ensure the M is followed by two float or integer numbers representing X and Y coordinates, separated by a comma.`)
+    )
+  }
+}
+
+const moveToXState = parsingContext => {
+  switch (parsingContext.getCharacter()) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '.':
+      return parseNext(
+        parsingContext
+          .addToBuffer(parsingContext.getCharacter())
+          .consumeCharacter()
+      )
+
+    default:
+      const buffer = parsingContext.getBuffer()
+
+      if (buffer.length === 0) {
+        return parseNext(
+          parsingContext
+            .addAction(ParsingAction.Problem())
+            .addToBuffer(`Comma found when expecting a number in a MoveTo (M) command at character ${parsingContext.position}, please ensure the M is followed by a float indicating the value for the X coordinate.`)
+        )
+      }
+
+      const x = parseFloat(buffer.join(''))
+      return parseNext(
+        parsingContext
+          .getParentContext()
+          .addToBuffer(x)
+          .addAction(ParsingAction.MoveToMiddle())
+      )
+  }
+}
+
+const moveToMiddleState = parsingContext => {
+  switch (parsingContext.getCharacter()) {
+    case ' ':
+      return parseNext(
+        parsingContext.consumeCharacter()
+      )
+    case ',':
+      return parseNext(
+        parsingContext
+          .consumeCharacter()
+          .getParentContext()
+          .addAction(ParsingAction.MoveToY())
+      )
+    default:
+      return parseNext(
+        parsingContext
+          .addAction(ParsingAction.Problem())
+          .addToBuffer(`Unexpected character '${parsingContext.getCharacter()}' in position ${parsingContext.getPosition()}, after the X coordinate value of a MoveTo there should be a comma, and optionally spaces.`)
+      )
+  }
+}
+
+const moveToYState = parsingContext => {
+  switch (parsingContext.getCharacter()) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '.':
+      return parseNext(
+        parsingContext
+          .addToBuffer(parsingContext.getCharacter())
+          .consumeCharacter()
+      )
+
+    case ' ':
+      if (parsingContext.getBuffer().length === 0) {
+        return parseNext(
+          parsingContext.consumeCharacter()
+        )
+      }
+
+    default:
+      const buffer = parsingContext.getBuffer()
+
+      if (buffer.length === 0) {
+        const error = parsingContext.getCharacter() === undefined
+          ? `Unexpected end of text when expecting a number in a MoveTo (M) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
+          : `Character ${parsingContext.getCharacter()} found when expecting a number in a MoveTo (M) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
+        return parseNext(
+          parsingContext
+            .addAction(ParsingAction.Problem())
+            .addToBuffer(error)
+        )
+      }
+
+      const x = parseFloat(buffer.join(''))
+      return parseNext(
+        parsingContext
+          .getParentContext()
+          .addToBuffer(x)
+      )
+  }
+}
+
+const fromD = d => {
+  const resultingContext = parseNext(ParsingContext(d))
+
+  return resultingContext
     .getAction()
     .match({
-      Initial: () => initialProcess(parsingContext),
-      MoveTo: () => moveToProcess(parsingContext),
-      MoveToX: () => moveToXProcess(parsingContext),
-      MoveToMiddle: () => moveToMiddle(parsingContext),
+      Problem: () => Result.Error(resultingContext.getBuffer()[0]),
+      _: () => Result.Ok(resultingContext.getBuffer())
     })
-
-const Natural = (natural) => ({
-  natural,
-  reduce: (reducer, init) =>
-    natural === 0
-      ? init
-      : Natural(natural - 1)
-          .reduce(reducer, reducer(init, natural))
-})
-
-const fromD = d =>
-  pathProcessCharacter(ParsingContext(d))
-    .getBuffer()
-
-// import elegir from 'elegir'
-//
-// const bySpaces = x => x.split(/\s/)
-//
-// const getCommandType = x => {
-//   switch (x) {
-//     case 'M':
-//       return 'MoveTo'
-//     case 'L':
-//       return 'LineTo'
-//     case 'C':
-//       return 'Cubic Bézier Curve'
-//     case 'Z':
-//       return 'ClosePath'
-//     default:
-//       return 'Unlabeled'
-//   }
-// }
-//
-// const parsePoint = command => {
-//   const firstChar = command[0]
-//   const commandType = getCommandType(firstChar)
-//   const [x, y] = elegir(
-//     // Unlabeled
-//     commandType === 'Unlabeled',
-//     command.split(',').map(x => parseFloat(x, 10)),
-//     // ClosePath
-//     commandType === 'ClosePath',
-//     [undefined, undefined],
-//     // default
-//     true,
-//     command
-//       .slice(1)
-//       .split(',')
-//       .map(x => parseFloat(x, 10))
-//   )
-//
-//   return {
-//     commandType,
-//     x,
-//     y,
-//     ...(commandType === 'Cubic Bézier Curve'
-//       ? {
-//           pointNumber: 0,
-//         }
-//       : {}),
-//   }
-// }
-//
-// const fixTypes = (fixed, command) => {
-//   if (command.commandType === 'Unlabeled') {
-//     if (fixed[fixed.length - 1].commandType === 'Cubic Bézier Curve') {
-//       return [
-//         ...fixed,
-//         {
-//           ...command,
-//           commandType: 'Cubic Bézier Curve',
-//           pointNumber: fixed[fixed.length - 1].pointNumber + 1,
-//         },
-//       ]
-//     }
-//   }
-//   return [...fixed, command]
-// }
-//
-// export default path =>
-//   bySpaces(path)
-//     .map(parsePoint)
-//     .reduce(fixTypes, [])
-
-
-// const maybeNumber = character => {
-//   switch (character) {
-//     case '0':
-//     case '1':
-//     case '2':
-//     case '3':
-//     case '4':
-//     case '5':
-//     case '6':
-//     case '7':
-//     case '8':
-//     case '9':
-//     case '.':
-//       return Maybe.Just(character)
-//     default:
-//       return Maybe.Nothing()
-//   }
-// }
-//
-// const processNumber = parsingContext => character =>
-//   maybeNumber(character)
-//     .matchWith({
-//       Just: () => parsingContext.addToBuffer(character),
-//       Nothing: () => parsingContext.
-//     })
-//
-
-////////////////////////////////////////////
-
-
+}
 
 export default fromD

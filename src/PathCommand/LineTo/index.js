@@ -9,6 +9,11 @@ const LineTo = (x, y) => ({
   mapX: f => LineTo(f(x), y),
   mapY: f => LineTo(x, f(y)),
   map: f => LineTo(f(x), f(y)),
+  toJSON: () => ({
+    commandType: 'LineTo',
+    x,
+    y,
+  })
 })
 
 LineTo.fromPoint = ({ x, y }) => LineTo(x, y)

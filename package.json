@@ -38,6 +38,7 @@
     "@babel/node": "^7.0.0-beta.56",
     "@babel/plugin-proposal-export-namespace-from": "^7.0.0-beta.56",
     "@babel/preset-env": "^7.0.0-beta.56",
+    "chalk": "^2.4.1",
     "fantasy-color": "^0.2.3",
     "ramda": "^0.25.0",
     "react": "^16.4.2",

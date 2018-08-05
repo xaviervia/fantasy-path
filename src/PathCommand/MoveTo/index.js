@@ -9,6 +9,11 @@ const MoveTo = (x, y) => ({
   mapX: f => MoveTo(f(x), y),
   mapY: f => MoveTo(x, f(y)),
   map: f => MoveTo(f(x), f(y)),
+  toJSON: () => ({
+    x,
+    y,
+    commandType: 'MoveTo',
+  })
 })
 
 MoveTo.fromPoint = ({ x, y }) => MoveTo(x, y)
