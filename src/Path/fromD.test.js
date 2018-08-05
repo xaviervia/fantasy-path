@@ -109,5 +109,5 @@ washington(
         LineTo(5, 4).toJSON()
       ]
     ),
-  ).filter(({description}) => /M50,50 L6.7,0.3/.test(description))
+  ).filter(({description}) => /./.test(description))
 )

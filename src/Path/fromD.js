@@ -3,6 +3,7 @@ import Result from 'folktale/result'
 import { LineTo, MoveTo } from '../PathCommand'
 import * as ParsingAction from './ParsingAction'
 import ParsingContext from './ParsingContext'
+import * as parsingErrors from './parsingErrors'
 import { magenta } from 'chalk'
 
 const parseNext = parsingContext => {
@@ -12,14 +13,49 @@ const parseNext = parsingContext => {
     .getAction()
     .match({
       Initial: () => initialState(parsingContext),
-      LineTo: () => lineToState(parsingContext),
-      LineToX: () => lineToXState(parsingContext),
-      LineToMiddle: () => lineToMiddleState(parsingContext),
-      LineToY: () => lineToYState(parsingContext),
-      MoveTo: () => moveToState(parsingContext),
-      MoveToX: () => moveToXState(parsingContext),
-      MoveToMiddle: () => moveToMiddleState(parsingContext),
-      MoveToY: () => moveToYState(parsingContext),
+
+      LineTo: () => generateCommandStartState(
+        LineTo,
+        ParsingAction.LineToX,
+        parsingErrors.unterminatedLineTo
+      )(parsingContext),
+
+      LineToX: () => generateCollectNumberState(
+        ParsingAction.LineToMiddle,
+        parsingErrors.unexpectedCommaInLineToX
+      )(parsingContext),
+
+      LineToMiddle: () => generateCollectCommaState(
+        ParsingAction.LineToY,
+        parsingErrors.unexpectedCharacterInLineToMiddle
+      )(parsingContext),
+
+      LineToY: () => generateCollectNumberState(
+        null,
+        parsingErrors.unexpectedCharacterInLineToY
+      )(parsingContext),
+
+      MoveTo: () => generateCommandStartState(
+        MoveTo,
+        ParsingAction.MoveToX,
+        parsingErrors.unterminatedMoveTo
+      )(parsingContext),
+
+      MoveToX: () => generateCollectNumberState(
+        ParsingAction.MoveToMiddle,
+        parsingErrors.unexpectedCommaInMoveToX
+      )(parsingContext),
+
+      MoveToMiddle: () => generateCollectCommaState(
+        ParsingAction.MoveToY,
+        parsingErrors.unexpectedCharacterInMoveToMiddle
+      )(parsingContext),
+
+      MoveToY: () => generateCollectNumberState(
+        null,
+        parsingErrors.unexpectedCharacterInMoveToY
+      )(parsingContext),
+
       Problem: () => parsingContext,
     })
 }
@@ -79,18 +115,18 @@ const initialState = parsingContext => {
   }
 }
 
-const lineToState = parsingContext => {
+const generateCommandStartState = (Command, NextAction, errorCreator) => parsingContext => {
   const buffer = parsingContext.getBuffer()
   if (buffer.length === 2) {
     return parseNext(
       parsingContext
       .getParentContext()
-      .addToBuffer(LineTo(buffer[0], buffer[1]))
+      .addToBuffer(Command(buffer[0], buffer[1]))
     )
   } else {
     if (isValidNumberCharacter(parsingContext.getCharacter())) {
       return parseNext(
-        parsingContext.addAction(ParsingAction.LineToX())
+        parsingContext.addAction(NextAction())
       )
     }
 
@@ -98,74 +134,12 @@ const lineToState = parsingContext => {
       parsingContext
         .getParentContext()
         .addAction(ParsingAction.Problem())
-        .addToBuffer(`Unterminated LineTo (L) command at character ${parsingContext.position}, please ensure the L is followed by two float or integer numbers representing X and Y coordinates, separated by a comma.`)
+        .addToBuffer(errorCreator(parsingContext))
     )
   }
 }
 
-const lineToXState = parsingContext => {
-  switch (parsingContext.getCharacter()) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-    case '.':
-      return parseNext(
-        parsingContext
-          .addToBuffer(parsingContext.getCharacter())
-          .consumeCharacter()
-      )
-
-    default:
-      const buffer = parsingContext.getBuffer()
-
-      if (buffer.length === 0) {
-        return parseNext(
-          parsingContext
-            .addAction(ParsingAction.Problem())
-            .addToBuffer(`Comma found when expecting a number in a LineTo (L) command at character ${parsingContext.position}, please ensure the L is followed by a float indicating the value for the X coordinate.`)
-        )
-      }
-
-      const x = parseFloat(buffer.join(''))
-      return parseNext(
-        parsingContext
-          .getParentContext()
-          .addToBuffer(x)
-          .addAction(ParsingAction.LineToMiddle())
-      )
-  }
-}
-
-const lineToMiddleState = parsingContext => {
-  switch (parsingContext.getCharacter()) {
-    case ' ':
-      return parseNext(
-        parsingContext.consumeCharacter()
-      )
-    case ',':
-      return parseNext(
-        parsingContext
-          .consumeCharacter()
-          .getParentContext()
-          .addAction(ParsingAction.LineToY())
-      )
-    default:
-      return parseNext(
-        parsingContext
-          .addAction(ParsingAction.Problem())
-          .addToBuffer(`Unexpected character '${parsingContext.getCharacter()}' in position ${parsingContext.getPosition()}, after the X coordinate value of a LineTo there should be a comma, and optionally spaces.`)
-      )
-  }
-}
-
-const lineToYState = parsingContext => {
+const generateCollectNumberState = (NextAction, errorCreator) => parsingContext => {
   switch (parsingContext.getCharacter()) {
     case '0':
     case '1':
@@ -195,89 +169,30 @@ const lineToYState = parsingContext => {
       const buffer = parsingContext.getBuffer()
 
       if (buffer.length === 0) {
-        const error = parsingContext.getCharacter() === undefined
-          ? `Unexpected end of text when expecting a number in a LineTo (L) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
-          : `Character ${parsingContext.getCharacter()} found when expecting a number in a LineTo (L) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
         return parseNext(
           parsingContext
             .addAction(ParsingAction.Problem())
-            .addToBuffer(error)
+            .addToBuffer(errorCreator(parsingContext))
         )
       }
 
       const x = parseFloat(buffer.join(''))
-      return parseNext(
-        parsingContext
-          .getParentContext()
-          .addToBuffer(x)
-      )
-  }
-}
-
-const moveToState = parsingContext => {
-  const buffer = parsingContext.getBuffer()
-  if (buffer.length === 2) {
-    return parseNext(
-      parsingContext
-        .getParentContext()
-        .addToBuffer(MoveTo(buffer[0], buffer[1]))
-    )
-  } else {
-    if (isValidNumberCharacter(parsingContext.getCharacter())) {
-      return parseNext(
-        parsingContext.addAction(ParsingAction.MoveToX())
-      )
-    }
-    return parseNext(
-      parsingContext
-        .getParentContext()
-        .addAction(ParsingAction.Problem())
-        .addToBuffer(`Unterminated MoveTo (M) command at character ${parsingContext.position}, please ensure the M is followed by two float or integer numbers representing X and Y coordinates, separated by a comma.`)
-    )
-  }
-}
-
-const moveToXState = parsingContext => {
-  switch (parsingContext.getCharacter()) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-    case '.':
-      return parseNext(
-        parsingContext
-          .addToBuffer(parsingContext.getCharacter())
-          .consumeCharacter()
-      )
-
-    default:
-      const buffer = parsingContext.getBuffer()
-
-      if (buffer.length === 0) {
-        return parseNext(
+      return NextAction != null
+        ? parseNext(
           parsingContext
-            .addAction(ParsingAction.Problem())
-            .addToBuffer(`Comma found when expecting a number in a MoveTo (M) command at character ${parsingContext.position}, please ensure the M is followed by a float indicating the value for the X coordinate.`)
+            .getParentContext()
+            .addToBuffer(x)
+            .addAction(NextAction())
         )
-      }
-
-      const x = parseFloat(buffer.join(''))
-      return parseNext(
-        parsingContext
-          .getParentContext()
-          .addToBuffer(x)
-          .addAction(ParsingAction.MoveToMiddle())
-      )
+        : parseNext(
+          parsingContext
+            .getParentContext()
+            .addToBuffer(x)
+        )
   }
 }
 
-const moveToMiddleState = parsingContext => {
+const generateCollectCommaState = (NextAction, errorCreator) => parsingContext => {
   switch (parsingContext.getCharacter()) {
     case ' ':
       return parseNext(
@@ -288,62 +203,13 @@ const moveToMiddleState = parsingContext => {
         parsingContext
           .consumeCharacter()
           .getParentContext()
-          .addAction(ParsingAction.MoveToY())
+          .addAction(NextAction())
       )
     default:
       return parseNext(
         parsingContext
           .addAction(ParsingAction.Problem())
-          .addToBuffer(`Unexpected character '${parsingContext.getCharacter()}' in position ${parsingContext.getPosition()}, after the X coordinate value of a MoveTo there should be a comma, and optionally spaces.`)
-      )
-  }
-}
-
-const moveToYState = parsingContext => {
-  switch (parsingContext.getCharacter()) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-    case '.':
-      return parseNext(
-        parsingContext
-          .addToBuffer(parsingContext.getCharacter())
-          .consumeCharacter()
-      )
-
-    case ' ':
-      if (parsingContext.getBuffer().length === 0) {
-        return parseNext(
-          parsingContext.consumeCharacter()
-        )
-      }
-
-    default:
-      const buffer = parsingContext.getBuffer()
-
-      if (buffer.length === 0) {
-        const error = parsingContext.getCharacter() === undefined
-          ? `Unexpected end of text when expecting a number in a MoveTo (M) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
-          : `Character ${parsingContext.getCharacter()} found when expecting a number in a MoveTo (M) command at position ${parsingContext.position}, please ensure there is a Y value after the comma.`
-        return parseNext(
-          parsingContext
-            .addAction(ParsingAction.Problem())
-            .addToBuffer(error)
-        )
-      }
-
-      const x = parseFloat(buffer.join(''))
-      return parseNext(
-        parsingContext
-          .getParentContext()
-          .addToBuffer(x)
+          .addToBuffer(errorCreator(parsingContext))
       )
   }
 }
