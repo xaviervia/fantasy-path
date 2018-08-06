@@ -13,7 +13,8 @@ const LineTo = (x, y) => ({
     commandType: 'LineTo',
     x,
     y,
-  })
+  }),
+  match: ({LineTo, _}) => LineTo != null ? LineTo(x, y) : _()
 })
 
 LineTo.fromPoint = ({ x, y }) => LineTo(x, y)

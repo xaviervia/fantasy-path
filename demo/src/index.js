@@ -48,7 +48,7 @@ Z`).matchWith({
   Error: ({value}) => { throw new Error(value) }
 })
 
-// console.log(myPath.strictDiffWith(targetPath))
+console.log(myPath.strictDiffWith(targetPath).matchWith({ Ok: ({value}) => value }))
 
 render(
   <main

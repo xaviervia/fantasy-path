@@ -15,7 +15,8 @@ const CubicBezierCurve = (start, middle, end) => ({
     start: start.toJSON(),
     middle: middle.toJSON(),
     end: end.toJSON(),
-  })
+  }),
+  match: ({CubicBezierCurve, _}) => CubicBezierCurve != null ? CubicBezierCurve(start, middle, end) : _()
 })
 
 export default CubicBezierCurve

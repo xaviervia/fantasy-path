@@ -9,7 +9,9 @@ const ClosePath = () => ({
   mapY: ClosePath,
   toJSON: () => ({
     commandType: 'ClosePath',
-  })
+  }),
+  match: ({ClosePath, _}) =>
+    ClosePath != null ? ClosePath() : _()
 })
 
 export default ClosePath

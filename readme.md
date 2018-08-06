@@ -4,6 +4,9 @@ Fantasy Land types for operating with vector paths, compatible with SVG and Canv
 
 *Work in progress*
 
+// TODO!
+- Make MoveTo and LineTo use Point when constructing, for consistency with CubicBezierCurve
+
 ## Types
 
 - `Context2dTask`: Task for drawing to a context2d

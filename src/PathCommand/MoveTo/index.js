@@ -13,7 +13,8 @@ const MoveTo = (x, y) => ({
     x,
     y,
     commandType: 'MoveTo',
-  })
+  }),
+  match: ({MoveTo, _}) => MoveTo != null ? MoveTo(x, y) : _()
 })
 
 MoveTo.fromPoint = ({ x, y }) => MoveTo(x, y)
