@@ -174,6 +174,7 @@ const generateCommandStartState = (Command, NextAction, errorCreator, requiredBu
     case '8':
     case '9':
     case '.':
+    case '-':
     case ',':
     case ' ':
     case '\n':
@@ -219,6 +220,15 @@ const generateCollectNumberState = (NextAction, errorCreator) => parsingContext 
       if (parsingContext.getBuffer().length === 0) {
         return parseNext(
           parsingContext.consumeCharacter()
+        )
+      }
+
+    case '-':
+      if (parsingContext.getBuffer().length === 0) {
+        return parseNext(
+          parsingContext
+            .addToBuffer(parsingContext.getCharacter())
+            .consumeCharacter()
         )
       }
 

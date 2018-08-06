@@ -26,6 +26,30 @@ Z`)
   Ok: ({value}) => value
 })
 
+const targetPath = Path.fromD(`M100,25
+L94.449,25
+C89.285,25 84.291,23.1370186 80.385,19.7530525
+L69.298,10.1481485
+C58.296,0.618243818 41.704,0.618243818 30.702,10.1481485
+L19.615,19.7530525
+C15.709,23.1370186 10.715,25 5.551,25
+L0,25
+L0,21.9930301
+L5.551,21.9930301
+C9.995,21.9930301 14.292,20.3900461 17.653,17.4780752
+L28.74,7.87417126
+C40.86,-2.62472375 59.14,-2.62472375 71.26,7.87417126
+L82.347,17.4780752
+C85.708,20.3900461 90.005,21.9930301 94.449,21.9930301
+L100,21.9930301
+L100,25
+Z`).matchWith({
+  Ok: ({value}) => value,
+  Error: ({value}) => { throw new Error(value) }
+})
+
+// console.log(myPath.strictDiffWith(targetPath))
+
 render(
   <main
     style={{
@@ -49,7 +73,7 @@ render(
     Context2dTask.fromContext2d(context2d)
       .beginPath()
       .chain(
-        myPath.map(multiply(2)).getContext2dTaskFor
+        myPath.concat(targetPath).map(multiply(2)).getContext2dTaskFor
       )
       .map(context2d => {
         context2d.stroke()

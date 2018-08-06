@@ -205,6 +205,18 @@ washington(
         CubicBezierCurve(Point(5, 6), Point(7.8, 9), Point(2, 3)).toJSON(),
         ClosePath().toJSON()
       ]
+    ),
+
+    example(
+      'accept negative numbers values',
+      () => fromD('M08,-2')
+        .matchWith({
+          Ok: ({value}) => value
+        })
+        .map(x => x.toJSON()),
+      [
+        MoveTo(8, -2).toJSON(),
+      ]
     )
   ).filter(({description}) => /./.test(description))
 )
