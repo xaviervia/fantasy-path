@@ -12,9 +12,9 @@ const CubicBezierCurve = (start, middle, end) => ({
   map: f => CubicBezierCurve(start.map(f), middle.map(f), end.map(f)),
   toJSON: () => ({
     commandType: 'CubicBezierCurve',
-    start,
-    middle,
-    end,
+    start: start.toJSON(),
+    middle: middle.toJSON(),
+    end: end.toJSON(),
   })
 })
 

@@ -1,6 +1,7 @@
 import Maybe from 'folktale/maybe'
 import Result from 'folktale/result'
-import { LineTo, MoveTo } from '../PathCommand'
+import { ClosePath, CubicBezierCurve, LineTo, MoveTo } from '../PathCommand'
+import Point from '../Point'
 import * as ParsingAction from './ParsingAction'
 import ParsingContext from './ParsingContext'
 import * as parsingErrors from './parsingErrors'
@@ -14,10 +15,47 @@ const parseNext = parsingContext => {
     .match({
       Initial: () => initialState(parsingContext),
 
+      ClosePath: () => generateCommandStartState(
+        ClosePath,
+        null,
+        null,
+        0
+      )(parsingContext),
+
+      CubicBezierCurve: () => generateCommandStartState(
+        CubicBezierCurve,
+        ParsingAction.CubicBezierCurveStart,
+        parsingErrors.unterminatedCubicBezierCurve,
+        3
+      )(parsingContext),
+
+      CubicBezierCurveStart: () => generateCommandStartState(
+        Point,
+        ParsingAction.CubicBezierCurveStartX,
+        () => 'It shouldn’t have gotten here (CubicBezierCurveStart)',
+        2
+      )(parsingContext),
+
+      CubicBezierCurveStartX: () => generateCollectNumberState(
+        ParsingAction.CubicBezierCurveStartMiddle,
+        parsingErrors.unexpectedCommaInCubicBezierCurveStartX
+      )(parsingContext),
+
+      CubicBezierCurveStartMiddle: () => generateCollectCommaState(
+        ParsingAction.CubicBezierCurveStartY,
+        parsingErrors.unexpectedCharacterInCubicBezierStartMiddle
+      )(parsingContext),
+
+      CubicBezierCurveStartY: () => generateCollectNumberState(
+        null,
+        parsingErrors.unexpectedCharacterInCubicBezierStartY,
+      )(parsingContext),
+
       LineTo: () => generateCommandStartState(
         LineTo,
         ParsingAction.LineToX,
-        parsingErrors.unterminatedLineTo
+        parsingErrors.unterminatedLineTo,
+        2
       )(parsingContext),
 
       LineToX: () => generateCollectNumberState(
@@ -38,7 +76,8 @@ const parseNext = parsingContext => {
       MoveTo: () => generateCommandStartState(
         MoveTo,
         ParsingAction.MoveToX,
-        parsingErrors.unterminatedMoveTo
+        parsingErrors.unterminatedMoveTo,
+        2
       )(parsingContext),
 
       MoveToX: () => generateCollectNumberState(
@@ -57,28 +96,9 @@ const parseNext = parsingContext => {
       )(parsingContext),
 
       Problem: () => parsingContext,
+
+      _: () => { throw new Error('You forgot to add a pattern for this') },
     })
-}
-
-const isValidNumberCharacter = character => {
-  switch (character) {
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-    case '.':
-    case ',':
-    case ' ':
-      return true
-  }
-
-  return false
 }
 
 const initialState = parsingContext => {
@@ -97,7 +117,24 @@ const initialState = parsingContext => {
             .addAction(ParsingAction.LineTo())
       )
 
+    case 'C':
+      return parseNext(
+        parsingContext
+          .consumeCharacter()
+          .addAction(ParsingAction.CubicBezierCurve())
+      )
+
+    case 'Z':
+      return parseNext(
+        parsingContext
+          .consumeCharacter()
+          .addAction(ParsingAction.ClosePath())
+      )
+
     case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
       return parseNext(
         parsingContext
           .consumeCharacter()
@@ -115,27 +152,44 @@ const initialState = parsingContext => {
   }
 }
 
-const generateCommandStartState = (Command, NextAction, errorCreator) => parsingContext => {
+const generateCommandStartState = (Command, NextAction, errorCreator, requiredBufferLength) => parsingContext => {
   const buffer = parsingContext.getBuffer()
-  if (buffer.length === 2) {
+  if (buffer.length === requiredBufferLength) {
     return parseNext(
       parsingContext
       .getParentContext()
-      .addToBuffer(Command(buffer[0], buffer[1]))
+      .addToBuffer(Command(...buffer))
     )
-  } else {
-    if (isValidNumberCharacter(parsingContext.getCharacter())) {
+  }
+
+  switch (parsingContext.getCharacter()) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '.':
+    case ',':
+    case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
       return parseNext(
         parsingContext.addAction(NextAction())
       )
-    }
 
-    return parseNext(
-      parsingContext
-        .getParentContext()
-        .addAction(ParsingAction.Problem())
-        .addToBuffer(errorCreator(parsingContext))
-    )
+    default:
+      return parseNext(
+        parsingContext
+          .getParentContext()
+          .addAction(ParsingAction.Problem())
+          .addToBuffer(errorCreator(parsingContext))
+      )
   }
 }
 
@@ -159,6 +213,9 @@ const generateCollectNumberState = (NextAction, errorCreator) => parsingContext 
       )
 
     case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
       if (parsingContext.getBuffer().length === 0) {
         return parseNext(
           parsingContext.consumeCharacter()
@@ -195,6 +252,9 @@ const generateCollectNumberState = (NextAction, errorCreator) => parsingContext 
 const generateCollectCommaState = (NextAction, errorCreator) => parsingContext => {
   switch (parsingContext.getCharacter()) {
     case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
       return parseNext(
         parsingContext.consumeCharacter()
       )

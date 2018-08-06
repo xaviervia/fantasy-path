@@ -8,6 +8,18 @@ const createAction = name => () => ({
 
 export const Initial = createAction('Initial')
 
+export const ClosePath = createAction('ClosePath')
+
+export const CubicBezierCurve = createAction('CubicBezierCurve')
+
+export const CubicBezierCurveStart = createAction('CubicBezierCurveStart')
+
+export const CubicBezierCurveStartX = createAction('CubicBezierCurveStartX')
+
+export const CubicBezierCurveStartMiddle = createAction('CubicBezierCurveStartMiddle')
+
+export const CubicBezierCurveStartY = createAction('CubicBezierCurveStartY')
+
 export const LineTo = createAction('LineTo')
 
 export const LineToX = createAction('LineToX')
