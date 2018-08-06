@@ -1,4 +1,5 @@
 import _toD from './toD'
+import _fromD from './fromD'
 import _getContext2dTaskFor from './getContext2dTaskFor'
 
 const Path = (...commands) => ({
@@ -13,6 +14,15 @@ const Path = (...commands) => ({
 
 Path.empty = () => Path()
 
+export const fromD = d =>
+  _fromD(d)
+    .map(commands => Path(...commands))
+
 export const toD = _toD
 export const getContext2dTaskFor = _getContext2dTaskFor
+
+Path.fromD = fromD
+Path.toD = toD
+Path.getContext2dTaskFor = getContext2dTaskFor
+
 export default Path

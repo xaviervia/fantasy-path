@@ -5,10 +5,10 @@ import Point from '../Point'
 import * as ParsingAction from './ParsingAction'
 import ParsingContext from './ParsingContext'
 import * as parsingErrors from './parsingErrors'
-import { magenta } from 'chalk'
+// import { magenta } from 'chalk'
 
 const parseNext = parsingContext => {
-  console.log(`${magenta('<>')} ${parsingContext.getAction().inspect()}`, parsingContext.getBuffer())
+  // console.log(`${magenta('<>')} ${parsingContext.getAction().inspect()}`, parsingContext.getBuffer())
 
   return parsingContext
     .getAction()

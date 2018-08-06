@@ -1,5 +1,5 @@
 import * as ParsingAction from '../ParsingAction'
-import { blue, cyan } from 'chalk'
+// import { blue, cyan } from 'chalk'
 
 const ParsingContext = (
   text,
@@ -37,7 +37,7 @@ const ParsingContext = (
   ),
 
   addAction: newAction =>
-  (console.log(`${cyan('->')} ${newAction.inspect()}`), true) &&
+  // (console.log(`${cyan('->')} ${newAction.inspect()}`), true) &&
     ParsingContext(
     text,
     position,
@@ -55,7 +55,8 @@ const ParsingContext = (
   hasParentContext: () => parentContext != null,
 
   getParentContext: () =>
-    (console.log(`${blue('<-')} ${parentContext.action.inspect()}`), true) && ParsingContext(
+    // (console.log(`${blue('<-')} ${parentContext.action.inspect()}`), true) &&
+    ParsingContext(
     parentContext.text,
     position,
     parentContext.buffer,
