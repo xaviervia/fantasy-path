@@ -15,6 +15,7 @@ Fantasy Land types for operating with vector paths, compatible with SVG and Canv
   - `mapX(f)`
   - `mapY(f)`
   - `toD() -> String`
+  - `toJSON() -> Object structure`
 - `PathCommand`:
   - Constructors
     - `MoveTo(x, y)`
@@ -27,6 +28,8 @@ Fantasy Land types for operating with vector paths, compatible with SVG and Canv
     - `map(f)`
     - `toD() -> String`
     - `getContext2dTaskFor(context2d) -> Context2dTask`
+    - `match(matcherOnDataConstructors)`
+    - `toJSON() -> Object structure`
 - `Path(...commands)`
   - `map(f)`
   - `toD() -> String`
@@ -34,4 +37,7 @@ Fantasy Land types for operating with vector paths, compatible with SVG and Canv
   - `mapX(f)`
   - `mapY(f)`
   - `concat(otherPath)`
+  - `strictDiffWith(otherPath) -> Result Path String`
+  - `toJSON() -> Object structure`
   - `.empty() -> Path`
+  - `.fromD(d) -> Result Path String`

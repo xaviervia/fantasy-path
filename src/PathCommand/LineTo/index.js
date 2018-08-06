@@ -9,6 +9,10 @@ const LineTo = (x, y) => ({
   mapX: f => LineTo(f(x), y),
   mapY: f => LineTo(x, f(y)),
   map: f => LineTo(f(x), f(y)),
+  add: otherCommand => otherCommand.match({
+    LineTo: (otherX, otherY) => LineTo(x + otherX, y + otherY),
+    _: () => LineTo(x, y)
+  }),
   toJSON: () => ({
     commandType: 'LineTo',
     x,

@@ -9,6 +9,10 @@ const MoveTo = (x, y) => ({
   mapX: f => MoveTo(f(x), y),
   mapY: f => MoveTo(x, f(y)),
   map: f => MoveTo(f(x), f(y)),
+  add: otherCommand => otherCommand.match({
+    MoveTo: (otherX, otherY) => MoveTo(x + otherX, y + otherY),
+    _: () => MoveTo(x, y)
+  }),
   toJSON: () => ({
     x,
     y,

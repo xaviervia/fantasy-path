@@ -6,6 +6,7 @@ const Point = (x, y) => ({
   map: f => Point(f(x), f(y)),
   toD: () => `${x},${y}`,
   toJSON: () => ({x, y}),
+  add: otherPoint => Point(x + otherPoint.x, y + otherPoint.y),
 })
 
 export default Point

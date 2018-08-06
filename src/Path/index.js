@@ -2,6 +2,7 @@ import _toD from './toD'
 import _fromD from './fromD'
 import _getContext2dTaskFor from './getContext2dTaskFor'
 import _strictDiffWith from './strictDiffWith'
+import _strictAdd from './strictAdd'
 
 const Path = (...commands) => ({
   commands,
@@ -13,6 +14,8 @@ const Path = (...commands) => ({
   mapY: f => Path(...commands.map(command => command.mapY(f))),
   strictDiffWith: targetPath => _strictDiffWith(commands, targetPath.commands)
     .map(differenceCommands => Path(...differenceCommands)),
+  strictAdd: targetPath => _strictAdd(commands, targetPath.commands)
+    .map(addedCommands => Path(...addedCommands)),
 })
 
 Path.empty = () => Path()

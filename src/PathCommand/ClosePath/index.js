@@ -10,6 +10,7 @@ const ClosePath = () => ({
   toJSON: () => ({
     commandType: 'ClosePath',
   }),
+  add: ClosePath,
   match: ({ClosePath, _}) =>
     ClosePath != null ? ClosePath() : _()
 })
