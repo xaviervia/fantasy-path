@@ -1,6 +1,6 @@
 {
   "name": "fantasy-path",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Fantasy Land types for operating with vector paths, compatible with SVG and Canvas",
   "main": "dist/index.js",
   "files": [
